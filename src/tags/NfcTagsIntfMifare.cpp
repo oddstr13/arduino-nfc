@@ -70,8 +70,6 @@ uint8_t* NfcTagsIntfMifare::getNfcidBuf(void)
 
 uint8_t NfcTagsIntfMifare::cmdDump(void)
 {
-    uint8_t status;
-
     _log.d("NfcTagsIntfMifare: %s state = %s\n", __func__, nfcTagsIntfMifare[_state]);
 
     // FIXME: not implemented yet

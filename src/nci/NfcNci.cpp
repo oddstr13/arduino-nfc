@@ -114,7 +114,7 @@ void NfcNci::handleEvent(void)
 void NfcNci::handleDataEvent(uint8_t buf[], uint32_t len)
 {
     uint8_t *p;
-    uint8_t mt, pbf, cid;
+    uint8_t mt, pbf [[gnu::unused]], cid;
 
     // init
     p = buf;
@@ -132,7 +132,7 @@ void NfcNci::handleDataEvent(uint8_t buf[], uint32_t len)
 void NfcNci::handleCoreEvent(uint8_t buf[], uint32_t len)
 {
     uint8_t *p;
-    uint8_t mt, pbf, gid, oid, status;
+    uint8_t mt, pbf [[gnu::unused]], gid [[gnu::unused]], oid, status;
 
     // init
     p = buf;
@@ -179,7 +179,7 @@ void NfcNci::handleCoreEvent(uint8_t buf[], uint32_t len)
 void NfcNci::handleRfEvent(uint8_t buf[], uint32_t len)
 {
     uint8_t *p;
-    uint8_t mt, pbf, gid, oid, status;
+    uint8_t mt, pbf [[gnu::unused]], gid [[gnu::unused]], oid, status;
 
     // init
     p = buf;
