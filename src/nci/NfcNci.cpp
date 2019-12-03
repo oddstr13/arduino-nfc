@@ -24,7 +24,7 @@
 #define getTxBuffer()       (_tx_buf)
 
 NfcNci::NfcNci(NfcLog& log, NfcHw& hw) :
-        _state(NCI_STATE_NONE), _log(log), _hw(hw)
+        _state(NCI_STATE_UNKNOWN), _log(log), _hw(hw)
 {
     _cb = NULL;
     _data = NULL;
@@ -244,11 +244,7 @@ uint8_t NfcNci::cmdCoreReset(uint8_t type)
     // _log NCI message
     _log.d("NCI_CMD: NCI_MSG_CORE_RESET\n");
 
-    // check state, parameters
-    if (_state != NCI_STATE_NONE) {
-        status = NCI_STATUS_REJECTED;
-        goto end;
-    }
+    // check parameters
     switch(type) {
         case NCI_RESET_TYPE_KEEP_CFG:
         case NCI_RESET_TYPE_RESET_CFG:
@@ -284,12 +280,6 @@ uint8_t NfcNci::rspCoreReset(uint8_t buf[])
     // _log NCI message
     _log.d("NCI_RSP: NCI_MSG_CORE_RESET\n");
 
-    // check state
-    if (_state != NCI_STATE_NONE) {
-        status = NCI_STATUS_REJECTED;
-        goto end;
-    }
-
     // check length
     len = *p++;
     if (len != NCI_CORE_PARAM_SIZE_RESET_RSP) {
@@ -309,7 +299,7 @@ uint8_t NfcNci::rspCoreReset(uint8_t buf[])
     _data = (void *)&_reset;
 
     // set state
-    _state = NCI_STATE_RFST_RESET;
+    _state = NCI_STATE_POST_RESET;
 
 end:
     return status;
@@ -324,7 +314,7 @@ uint8_t NfcNci::cmdCoreInit(void)
     _log.d("NCI_CMD: NCI_MSG_CORE_INIT\n");
 
     // check state, parameters
-    if (_state != NCI_STATE_RFST_RESET) {
+    if (_state != NCI_STATE_POST_RESET) {
         status = NCI_STATUS_REJECTED;
         goto end;
     }
@@ -356,7 +346,7 @@ uint8_t NfcNci::rspCoreInit(uint8_t buf[])
     _log.d("NCI_RSP: NCI_MSG_CORE_INIT\n");
 
     // check state
-    if (_state != NCI_STATE_RFST_RESET) {
+    if (_state != NCI_STATE_POST_RESET) {
         status = NCI_STATUS_REJECTED;
         goto end;
     }
