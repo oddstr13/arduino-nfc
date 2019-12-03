@@ -57,6 +57,11 @@ tNCI_DISCOVER_CONFS discover_confs[] =
     {
         NCI_DISCOVERY_TYPE_POLL_F,
         NCI_DISCOVERY_FREQUENCY_ALWAYS
+    },
+    // poll V + always
+    {
+        NCI_DISCOVERY_TYPE_POLL_ISO15693,
+        NCI_DISCOVERY_FREQUENCY_ALWAYS
     }
 };
 
@@ -105,7 +110,8 @@ const char *nfcTagsStateToStr[] = {
 NfcTags::NfcTags(NfcLog& log, NfcNci& nci) :
          _state(TAGS_STATE_NONE), _id(TAGS_ID_NONE),
          _log(log), _nci(nci), _p_cb(NULL),
-         _tag2(log, nci), _tagMifare(log, nci)
+         _tag2(log, nci), _tagMifare(log, nci),
+         _tagV(log, nci)
 {
     _data = NULL;
     _p_tagIntf = NULL;
@@ -392,14 +398,16 @@ void NfcTags::identifyTag(tNCI_RF_INTF *rf_intf)
         return;
     }
 
-    // FIXME: Mifare Ultra Ligth tag type 2 only at the moment
+    // FIXME: Mifare Ultra Light tag type 2 only at the moment
     // See NXP application note documents AN1303 and AN1305
     if (rf_intf->specific.type == NCI_DISCOVERY_TYPE_POLL_A) {
         if (rf_intf->specific.params.poll_a.nfcid_len == UID_SIZE_DOUBLE) {
             if (rf_intf->specific.params.poll_a.nfcid[0] == UID_NXP) {
-                // card is a Mifare Ultra Ligth card
+                // card is a Mifare Ultra Light card
                 _tag2.initTag(rf_intf);
                 _p_tagIntf = &_tag2;
+            } else {
+                _log.e("Unrecognised type A tag with 7-octet UID. UID[0] = 0x%02x\n", rf_intf->specific.params.poll_a.nfcid[0]);
             }
         }
         else if (rf_intf->specific.params.poll_a.sel_res_len == 1) {
@@ -409,9 +417,26 @@ void NfcTags::identifyTag(tNCI_RF_INTF *rf_intf)
                 _tagMifare.initTag(rf_intf);
                 _p_tagIntf = &_tagMifare;
             }
+        } else {
+            _log.e("Unrecognised type A tag. UID length: %d. UID[0] = 0x%02x\n", rf_intf->specific.params.poll_a.nfcid_len,
+                   rf_intf->specific.params.poll_a.nfcid[0]);
         }
     }
+    else if (rf_intf->specific.type == NCI_DISCOVERY_TYPE_POLL_ISO15693) {
+        _tagV.initTag(rf_intf);
+        _p_tagIntf = &_tagV;
+    }
     else {
+        if (rf_intf->specific.type == NCI_DISCOVERY_TYPE_POLL_B) {
+            _log.e("Tag technology type B NOT supported!\n");
+        }
+        else if (rf_intf->specific.type == NCI_DISCOVERY_TYPE_POLL_F) {
+            _log.e("Tag technology type F NOT supported!\n");
+        }
+        else {
+            _log.e("UNKNOWN TAG TYPE 0x%02x\n", rf_intf->specific.type);
+        }
+
         _p_tagIntf = NULL;
     }
 }

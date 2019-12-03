@@ -92,6 +92,7 @@ class NfcTags : public NfcNciCb
         tTAGS_NCI_RSP _nciRsp;          // NCI response
         NfcTagsIntfType2 _tag2;         // NFC Forum tag type 2
         NfcTagsIntfMifare _tagMifare;   // NXP Mifare classic / plus tag
+        NfcTagsIntfTypeV _tagV;         // NFC Forum tag type V / ISO 15693
         NfcTagsIntf *_p_tagIntf;        // current tag interface
 };
 

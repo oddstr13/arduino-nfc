@@ -114,4 +114,24 @@ class NfcTagsIntfMifare : public NfcTagsIntf
         void handleData(uint8_t status, uint16_t id, void *data);
 };
 
+// Tag interface object to exchange with activated tags of type V (AKA type 5)
+// See ISO 15693
+class NfcTagsIntfTypeV : public NfcTagsIntf
+{
+    public:
+        NfcTagsIntfTypeV(NfcLog& log, NfcNci& nci);
+
+    // public API
+    public:
+        uint8_t getType(void);
+        uint8_t getNfcidLen(void);
+        uint8_t* getNfcidBuf(void);
+        uint8_t cmdDump(void);
+
+    // internal stuff
+    public:
+        uint8_t handleDump(void);
+        void handleData(uint8_t status, uint16_t id, void *data);
+};
+
 #endif // __NFC_TAGS_INTF__

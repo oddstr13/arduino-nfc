@@ -224,6 +224,9 @@
 #define NCI_PROTOCOL_T3T                0x03
 #define NCI_PROTOCOL_ISO_DEP            0x04
 #define NCI_PROTOCOL_NFC_DEP            0x05
+#define NCI_PROTOCOL_15693              0x06
+#define NCI_PROTOCOL_MIFARE_CLASSIC     0x80
+#define NCI_PROTOCOL_KOVIO              0x8A
 
 /* Discovery Types/Detected Technology and Mode */
 #define NCI_DISCOVERY_TYPE_POLL_A               0x00
@@ -302,10 +305,18 @@ typedef struct
 
 typedef struct
 {
+    uint8_t flags;
+    uint8_t dsfid;
+    uint8_t nfcid[8];
+} tNCI_RF_PARAMS_PV;
+
+typedef struct
+{
     uint8_t type;
     union
     {
         tNCI_RF_PARAMS_PA poll_a;
+        tNCI_RF_PARAMS_PV poll_v;
     } params;
 } tNCI_RF_PARAMS;
 

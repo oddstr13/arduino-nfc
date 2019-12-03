@@ -567,6 +567,17 @@ void setRfTechSpecParams(uint8_t buf[], tNCI_RF_INTF *p_rf)
             }
         }
             break;
+        case NCI_DISCOVERY_TYPE_POLL_ISO15693:
+        {
+            tNCI_RF_PARAMS_PV *p_poll_v = &p_rf->specific.params.poll_v;
+            p_poll_v->flags = *buf++;
+            p_poll_v->dsfid = *buf++;
+            // UID in NCI message appears to be reversed
+            buf += 7;
+            for (uint8_t &i : p_poll_v->nfcid) {
+                i = *buf--;
+            }
+        }
         // FIXME: implement other modes
         default:
             break;

@@ -35,7 +35,8 @@ enum {
     TAGS_TYPE_2,
     TAGS_TYPE_3,
     TAGS_TYPE_4,
-    TAGS_TYPE_MIFARE
+    TAGS_TYPE_MIFARE,
+    TAGS_TYPE_V
 };
 
 // NCI response type definition
