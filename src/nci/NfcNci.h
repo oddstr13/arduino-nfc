@@ -379,7 +379,7 @@ class NfcNci
     public:
         NfcNci(NfcLog& log, NfcHw& hw);
         void init(NfcNciCb *cb) {_cb = cb;}
-        void handleEvent(void);
+        void handleEvent(bool wait=true);
         uint8_t cmdCoreReset(uint8_t type);
         uint8_t cmdCoreInit(void);
         uint8_t cmdRfDiscoverMap(uint8_t num, tNCI_DISCOVER_MAPS* p_maps);
@@ -388,7 +388,7 @@ class NfcNci
         uint8_t dataSend(uint8_t cid, uint8_t buf[], uint32_t len);
 
     private:
-        uint32_t waitForEvent(uint8_t buf[]);
+        uint32_t readMessage(uint8_t buf[]);
         void handleDataEvent(uint8_t buf[], uint32_t len);
         void handleCoreEvent(uint8_t buf[], uint32_t len);
         void handleRfEvent(uint8_t buf[], uint32_t len);

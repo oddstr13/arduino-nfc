@@ -30,7 +30,7 @@ NfcNci::NfcNci(NfcLog& log, NfcHw& hw) :
     _data = NULL;
 }
 
-uint32_t NfcNci::waitForEvent(uint8_t buf[])
+uint32_t NfcNci::readMessage(uint8_t buf[])
 {
     uint32_t len, ret;
 
@@ -54,7 +54,7 @@ end:
     return ret;
 }
 
-void NfcNci::handleEvent(void)
+void NfcNci::handleEvent(bool wait)
 {
     uint8_t *p, *buf;
     uint8_t mt, pbf, gid, oid;
@@ -66,10 +66,16 @@ void NfcNci::handleEvent(void)
         return;
     }
 
-    // wait for event
+    // Initialise buffer
     oid = mt = 0;
     buf = getRxBuffer();
-    len = waitForEvent(buf);
+
+    if (wait) {
+        // Wait for read data to be available
+        _hw.wait();
+    }
+
+    len = readMessage(buf);
     if (len <= 0) {
         _log.e("NCI error: null event received\n");
         _cb->cbError(NCI_STATUS_FAILED, UINT16_ID(mt, oid), NULL);

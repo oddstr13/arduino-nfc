@@ -56,14 +56,14 @@ uint8_t NfcHw_pn7120::write(uint8_t buf[], uint32_t len)
 
 uint8_t NfcHw_pn7120::read(uint8_t buf[], uint32_t len)
 {
-    // wait for response to be ready
-    wait();
-
     // read response
-    Wire.requestFrom(_address, len);
-    do {
-        *buf++ = Wire.read();
-    } while (Wire.available());
+    if (Wire.requestFrom(_address, len) != len) {
+        return 0;
+    }
+
+    for (int i = 0; i < len; ++i) {
+        buf[i] = Wire.read();
+    }
 
     // print response
     _log.bv("NCI_RX: ", (uint8_t *)(buf-len), len);
