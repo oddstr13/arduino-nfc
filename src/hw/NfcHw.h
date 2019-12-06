@@ -28,7 +28,6 @@ class NfcHw
 {
     public:
         NfcHw(NfcLog& log) : _log(log) {;}
-        virtual void init(void) = 0;
         virtual uint8_t write(uint8_t buf[], uint32_t len) = 0;
         virtual uint8_t read(uint8_t buf[], uint32_t len) = 0;
         virtual void wait(void) = 0;
