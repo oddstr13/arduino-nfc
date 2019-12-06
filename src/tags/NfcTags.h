@@ -66,7 +66,7 @@ class NfcTags : public NfcNciCb
         void handleDiscover(void);
         void cbRfDiscoverMap(uint8_t status, uint16_t id, void *data);
         void cbRfDiscover(uint8_t status, uint16_t id, void *data);
-        void cbRfDiscoverNtf(uint8_t status, uint16_t id, void *data);
+        void cbRfIntfActivatedNtf(uint8_t status, uint16_t id, void *data);
         // deactivate
         void handleDeactivate(void);
         void cbRfDeactivate(uint8_t status, uint16_t id, void *data);

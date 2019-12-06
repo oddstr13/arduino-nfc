@@ -217,7 +217,7 @@ void NfcNci::handleRfEvent(uint8_t buf[], uint32_t len)
             switch(oid) {
                 case NCI_MSG_RF_INTF_ACTIVATED:
                     status = ntfRfIntfActivated(p);
-                    _cb->cbRfDiscoverNtf(status, UINT16_ID(mt, oid), _data);
+                    _cb->cbRfIntfActivatedNtf(status, UINT16_ID(mt, oid), _data);
                     break;
                 case NCI_MSG_RF_DEACTIVATE:
                     status = ntfRfDeactivate(p);

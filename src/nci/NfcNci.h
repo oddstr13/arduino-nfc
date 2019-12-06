@@ -365,7 +365,7 @@ class NfcNciCb
         virtual void cbCoreInit(uint8_t status, uint16_t id, void *data) = 0;  
         virtual void cbRfDiscoverMap(uint8_t status, uint16_t id, void *data) = 0;  
         virtual void cbRfDiscover(uint8_t status, uint16_t id, void *data) = 0;  
-        virtual void cbRfDiscoverNtf(uint8_t status, uint16_t id, void *data) = 0;  
+        virtual void cbRfIntfActivatedNtf(uint8_t status, uint16_t id, void *data) = 0;  
         virtual void cbRfDeactivate(uint8_t status, uint16_t id, void *data) = 0;  
         virtual void cbRfDeactivateNtf(uint8_t status, uint16_t id, void *data) = 0;
         virtual void cbData(uint8_t status, uint16_t id, void *data) = 0;

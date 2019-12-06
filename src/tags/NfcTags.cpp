@@ -360,8 +360,7 @@ void NfcTags::cbRfDiscover(uint8_t status, uint16_t id, void *data)
     _p_cb->cbDiscover(status, TAGS_ID_DISCOVER, NULL);
 }
 
-
-void NfcTags::cbRfDiscoverNtf(uint8_t status, uint16_t id, void *data)
+void NfcTags::cbRfIntfActivatedNtf(uint8_t status, uint16_t id, void *data)
 {
     _log.d("NfcTags: %s status = %d id = %d\n", __func__, status, id);
     setNciResponse(status, id, data);
