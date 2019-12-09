@@ -57,6 +57,11 @@ class NfcTags : public NfcNciCb
         // response is callback function cbDump()
         uint8_t cmdDump(void);
 
+        // Unused callbacks
+        void cbProprietaryAct(uint8_t status, uint16_t id, void *data) {};  
+        void cbRfPresCheck(uint8_t status, uint16_t id, void *data) {};  
+        void cbRfPresCheckNtf(uint8_t status, uint16_t id, void *data) {};
+
     private:
         // reset
         void handleReset(void);

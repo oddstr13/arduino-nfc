@@ -110,6 +110,8 @@ void NfcNci::handleEvent(bool wait)
                 break;
             case NCI_GID_EE_MANAGE:
             case NCI_GID_PROP:
+                handleProprietaryEvent(buf, len);
+                break;
             default:
                 _cb->cbError(NCI_STATUS_UNKNOWN_GID, UINT16_ID(mt, oid), NULL);
                 break;
@@ -239,6 +241,53 @@ void NfcNci::handleRfEvent(uint8_t buf[], uint32_t len)
             _log.e("NCI error: unhandled rf event mt = %d\n", mt);
             _cb->cbError(NCI_STATUS_SYNTAX_ERROR, UINT16_ID(mt, oid), NULL);
             break;
+    }
+}
+
+void NfcNci::handleProprietaryEvent(uint8_t buf[], uint32_t len)
+{
+    uint8_t *p;
+    uint8_t mt, pbf [[gnu::unused]], gid [[gnu::unused]], oid, status;
+
+    // init
+    p = buf;
+
+    // get event header
+    NCI_MSG_PRS_HDR0(p, mt, pbf, gid);
+    NCI_MSG_PRS_HDR1(p, oid);
+
+    // FIXME: check event length = header + data length?
+    // process event
+    switch(mt) {
+        // response message
+        case NCI_MT_RSP:
+            switch (oid) {
+                case NCI_MSG_PROPRIETARY_ACT:
+                    status = rspProprietaryAct(p);
+                    _cb->cbProprietaryAct(status, UINT16_ID(mt, oid), _data);
+                    break;
+                case NCI_MSG_RF_PRES_CHECK:
+                    status = rspRfPresCheck(p);
+                    _cb->cbRfPresCheck(status, UINT16_ID(mt, oid), _data);
+                    break;
+                default:
+                    _log.e("NCI error: unhandled proprietary event oid = %d\n", oid);
+                    _cb->cbError(NCI_STATUS_UNKNOWN_OID, UINT16_ID(mt, oid), NULL);
+                    break;
+            }
+            break;
+        // notification message
+        case NCI_MT_NTF:
+            switch(oid) {
+                case NCI_MSG_RF_PRES_CHECK:
+                    status = ntfRfPresCheck(p);
+                    _cb->cbRfPresCheckNtf(status, UINT16_ID(mt, oid), _data);
+                    break;
+                default:
+                    _log.e("NCI error: unhandled proprietary notification event oid = %d\n", oid);
+                    _cb->cbError(NCI_STATUS_UNKNOWN_OID, UINT16_ID(mt, oid), NULL);
+                    break;
+            }
     }
 }
 
@@ -725,6 +774,167 @@ uint8_t NfcNci::ntfRfDeactivate(uint8_t buf[])
     _deactivate.type = *p++;
     _deactivate.reason = *p;
     _data = (void *)&_deactivate;
+
+    // no error
+    status = NCI_STATUS_OK;
+
+end:
+    return status;
+}
+
+uint8_t NfcNci::cmdProprietaryAct()
+{
+    uint8_t *p, *buf;
+    uint8_t status, ret;
+
+    // _log NCI message
+    _log.d("NCI_CMD: NCI_MSG_PROPRIETARY_ACT\n");
+
+    // check state
+    if (_state != NCI_STATE_RFST_IDLE) {
+        status = NCI_STATUS_REJECTED;
+        goto end;
+    }
+
+    // get TX buffer
+    buf = getTxBuffer();
+    p = buf;
+
+    // format reset command
+    NCI_MSG_BLD_HDR0(p, NCI_MT_CMD, NCI_GID_PROP);
+    NCI_MSG_BLD_HDR1(p, NCI_MSG_PROPRIETARY_ACT);
+    UINT8_TO_STREAM(p, NCI_PROP_PARAM_SIZE_PROPRIETARY_ACT);
+
+    // send command
+    ret = _hw.write(buf, NCI_MSG_HDR_SIZE + NCI_PROP_PARAM_SIZE_PROPRIETARY_ACT);
+    status = ret == NCI_MSG_HDR_SIZE + NCI_PROP_PARAM_SIZE_PROPRIETARY_ACT ? NCI_STATUS_OK : NCI_STATUS_FAILED;
+
+end:
+    return status;
+}
+
+uint8_t NfcNci::rspProprietaryAct(uint8_t buf[])
+{
+    uint8_t *p = buf;
+    uint8_t len, status;
+
+    // _log NCI message
+    _log.d("NCI_RSP: NCI_MSG_PROPRIETARY_ACT\n");
+
+    // check state
+    if (_state != NCI_STATE_RFST_IDLE) {
+        status = NCI_STATUS_REJECTED;
+        goto end;
+    }
+
+    // check length
+    len = *p++;
+    if (len != NCI_PROP_PARAM_SIZE_PROPRIETARY_ACT_RSP) {
+        status = NCI_STATUS_SYNTAX_ERROR;
+        goto end;
+    }
+
+    // check status
+    status = *p++;
+    if (status != NCI_STATUS_OK) {
+        goto end;
+    }
+
+    // data is internal firmware build number
+    _data = (void *) p;
+
+end:
+    return status;
+}
+
+uint8_t NfcNci::cmdRfPresCheck()
+{
+    uint8_t *p, *buf;
+    uint8_t status, ret;
+
+    // _log NCI message
+    _log.d("NCI_CMD: NCI_MSG_RF_PRES_CHECK\n");
+
+    // check state
+    if (_state != NCI_STATE_RFST_POLL_ACTIVE) {
+        status = NCI_STATUS_REJECTED;
+        goto end;
+    }
+
+    // get TX buffer
+    buf = getTxBuffer();
+    p = buf;
+
+    // format reset command
+    NCI_MSG_BLD_HDR0(p, NCI_MT_CMD, NCI_GID_PROP);
+    NCI_MSG_BLD_HDR1(p, NCI_MSG_RF_PRES_CHECK);
+    UINT8_TO_STREAM(p, NCI_PROP_PARAM_SIZE_PRES_CHECK);
+
+    // send command
+    ret = _hw.write(buf, NCI_MSG_HDR_SIZE + NCI_PROP_PARAM_SIZE_PRES_CHECK);
+    status = ret == NCI_MSG_HDR_SIZE + NCI_PROP_PARAM_SIZE_PRES_CHECK ? NCI_STATUS_OK : NCI_STATUS_FAILED;
+
+end:
+    return status;
+}
+
+uint8_t NfcNci::rspRfPresCheck(uint8_t buf[])
+{
+    uint8_t *p = buf;
+    uint8_t len, status;
+
+    // _log NCI message
+    _log.d("NCI_RSP: NCI_MSG_RF_PRES_CHECK\n");
+
+    // check state
+    if (_state != NCI_STATE_RFST_POLL_ACTIVE) {
+        status = NCI_STATUS_REJECTED;
+        goto end;
+    }
+
+    // check length
+    len = *p++;
+    if (len != NCI_PROP_PARAM_SIZE_PRES_CHECK_RSP) {
+        status = NCI_STATUS_SYNTAX_ERROR;
+        goto end;
+    }
+
+    // check status
+    status = *p;
+    if (status != NCI_STATUS_OK) {
+        goto end;
+    }
+
+    // no data
+    _data = NULL;
+
+end:
+    return status;
+}
+
+uint8_t NfcNci::ntfRfPresCheck(uint8_t buf[])
+{
+    uint8_t *p = buf;
+    uint8_t len, status;
+
+    // _log NCI message
+    _log.d("NCI_NTF: NCI_MSG_RF_PRES_CHECK\n");
+
+    // check state
+    if (_state != NCI_STATE_RFST_POLL_ACTIVE) {
+        status = NCI_STATUS_REJECTED;
+        goto end;
+    }
+
+    // check length
+    len = *p++;
+    if (len != NCI_PROP_PARAM_SIZE_PRES_CHECK_NTF) {
+        status = NCI_STATUS_SYNTAX_ERROR;
+        goto end;
+    }
+
+    // set presence data
+    _data = (void *)p;
 
     // no error
     status = NCI_STATUS_OK;

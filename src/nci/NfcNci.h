@@ -182,6 +182,10 @@
 #define NCI_MSG_RF_EE_DISCOVERY_REQ     10
 #define NCI_MSG_RF_PARAMETER_UPDATE     11
 
+/* Proprietary Group Opcode - 15 */
+#define NCI_MSG_PROPRIETARY_ACT         2
+#define NCI_MSG_RF_PRES_CHECK           17
+
 /* Response and notification IDs */
 #define NCI_ID_RSP_CORE_RESET           UINT16_ID(NCI_MT_RSP, NCI_MSG_CORE_RESET)
 #define NCI_ID_RSP_CORE_INIT            UINT16_ID(NCI_MT_RSP, NCI_MSG_CORE_INIT)
@@ -216,6 +220,15 @@
 #define NCI_RF_PARAM_SIZE_DEACTIVATE        0x01
 #define NCI_RF_PARAM_SIZE_DEACTIVATE_RSP    0x01
 #define NCI_RF_PARAM_SIZE_DEACTIVATE_NTF    0x02
+
+/* NCI PROPRIETARY_ACT_CMD (NXP Proprietary) */
+#define NCI_PROP_PARAM_SIZE_PROPRIETARY_ACT     0x00
+#define NCI_PROP_PARAM_SIZE_PROPRIETARY_ACT_RSP 0x05
+
+/* NCI RF_PRES_CHECK_CMD (NXP Proprietary) */
+#define NCI_PROP_PARAM_SIZE_PRES_CHECK          0x00
+#define NCI_PROP_PARAM_SIZE_PRES_CHECK_RSP      0x01
+#define NCI_PROP_PARAM_SIZE_PRES_CHECK_NTF      0x01
 
 /* Supported Protocols */
 #define NCI_PROTOCOL_UNKNOWN            0x00
@@ -368,6 +381,9 @@ class NfcNciCb
         virtual void cbRfIntfActivatedNtf(uint8_t status, uint16_t id, void *data) = 0;  
         virtual void cbRfDeactivate(uint8_t status, uint16_t id, void *data) = 0;  
         virtual void cbRfDeactivateNtf(uint8_t status, uint16_t id, void *data) = 0;
+        virtual void cbProprietaryAct(uint8_t status, uint16_t id, void *data) = 0;
+        virtual void cbRfPresCheck(uint8_t status, uint16_t id, void *data) = 0;  
+        virtual void cbRfPresCheckNtf(uint8_t status, uint16_t id, void *data) = 0;
         virtual void cbData(uint8_t status, uint16_t id, void *data) = 0;
         virtual void cbError(uint8_t status, uint16_t id, void *data) = 0;  
 };
@@ -385,6 +401,8 @@ class NfcNci
         uint8_t cmdRfDiscoverMap(uint8_t num, tNCI_DISCOVER_MAPS* p_maps);
         uint8_t cmdRfDiscover(uint8_t num, tNCI_DISCOVER_CONFS* p_confs);
         uint8_t cmdRfDeactivate(uint8_t type);
+        uint8_t cmdProprietaryAct();
+        uint8_t cmdRfPresCheck(void);
         uint8_t dataSend(uint8_t cid, uint8_t buf[], uint32_t len);
 
     private:
@@ -392,6 +410,7 @@ class NfcNci
         void handleDataEvent(uint8_t buf[], uint32_t len);
         void handleCoreEvent(uint8_t buf[], uint32_t len);
         void handleRfEvent(uint8_t buf[], uint32_t len);
+        void handleProprietaryEvent(uint8_t buf[], uint32_t len);
         uint8_t rspCoreReset(uint8_t buf[]);
         uint8_t rspCoreInit(uint8_t buf[]);
         uint8_t rspRfDiscoverMap(uint8_t buf[]);
@@ -399,6 +418,9 @@ class NfcNci
         uint8_t ntfRfIntfActivated(uint8_t buf[]);
         uint8_t rspRfDeactivate(uint8_t buf[]);
         uint8_t ntfRfDeactivate(uint8_t buf[]);
+        uint8_t rspProprietaryAct(uint8_t buf[]);
+        uint8_t rspRfPresCheck(uint8_t buf[]);
+        uint8_t ntfRfPresCheck(uint8_t buf[]);
 
     private:
         uint8_t _rx_buf[NCI_PACKET_SIZE];
