@@ -172,6 +172,13 @@ void NfcNci::handleCoreEvent(uint8_t buf[], uint32_t len)
         // notification message
         case NCI_MT_NTF:
             switch(oid) {
+                case NCI_MSG_CORE_RESET:
+                    // Unsolicited reset. Call reset callback.
+                    status = NCI_STATUS_OK;
+                    _reset.status = p[4];
+                    _data = (void *)&_reset;
+                    _cb->cbCoreReset(status, UINT16_ID(mt, oid), _data);
+                    break;
                 case NCI_MSG_CORE_CONN_CREDITS:
                     // FIXME: ignore credits for the moment
                     // only one request sent at a time
