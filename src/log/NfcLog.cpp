@@ -44,6 +44,10 @@ void NfcLog::print(uint8_t level, const char* str, va_list args)
                 Serial.print(va_arg( args, int), DEC);
                 continue;
             }
+            if( *str == 'u' ) {
+                Serial.print(va_arg( args, unsigned int), DEC);
+                continue;
+            }
             if( *str == 'x' ) {
                 Serial.print(va_arg( args, int), HEX);
                 continue;

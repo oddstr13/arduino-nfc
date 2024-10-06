@@ -222,7 +222,7 @@ void NfcNci::handleRfEvent(uint8_t buf[], uint32_t len)
                     _cb->cbRfDeactivate(status, UINT16_ID(mt, oid), _data);
                     break;
                 default:
-                    _log.e("NCI error: unhandled rf event oid = %d\n", oid);
+                    _log.e("NCI error: unhandled rf event mt =  %d oid = %d\n", mt, oid);
                     _cb->cbError(NCI_STATUS_UNKNOWN_OID, UINT16_ID(mt, oid), NULL);
                     break;
             }
@@ -239,7 +239,7 @@ void NfcNci::handleRfEvent(uint8_t buf[], uint32_t len)
                     _cb->cbRfDeactivateNtf(status, UINT16_ID(mt, oid), _data);
                     break;
                 default:
-                    _log.e("NCI error: unhandled rf event oid = %d\n", oid);
+                    _log.e("NCI error: unhandled rf event mt = %d  oid = %d\n", mt, oid);
                     _cb->cbError(NCI_STATUS_UNKNOWN_OID, UINT16_ID(mt, oid), NULL);
                     break;
             }

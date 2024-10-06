@@ -145,7 +145,7 @@ uint8_t NfcTags::translateNciStatus(uint8_t nci_status)
 
 void NfcTags::cbError(uint8_t status, uint16_t id, void *data)
 {
-    _log.e("NfcTags: %s %u %u", __func__, status, _id);
+    _log.e("NfcTags: %s %u %u\n", __func__, status, _id);
 }
 
 void NfcTags::handleEvent(void)
