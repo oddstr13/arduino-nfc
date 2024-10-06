@@ -32,7 +32,7 @@ void NfcHw_pn7120::init(void)
     delay(10);
 
     // join i2c bus
-    Wire.begin();
+    Wire1.begin();
 }
 
 uint8_t NfcHw_pn7120::write(uint8_t buf[], uint32_t len)
@@ -44,12 +44,12 @@ uint8_t NfcHw_pn7120::write(uint8_t buf[], uint32_t len)
 
     // i2c transfer starts with slave address (7 upper bytes only),
     // then transmit the NCI packet
-    Wire.beginTransmission(_address);
+    Wire1.beginTransmission(_address);
     while (len--) {
-        Wire.write(*buf++);
+        Wire1.write(*buf++);
         written++;
     }
-    Wire.endTransmission();
+    Wire1.endTransmission();
 
     return written;
 }
@@ -57,12 +57,12 @@ uint8_t NfcHw_pn7120::write(uint8_t buf[], uint32_t len)
 uint8_t NfcHw_pn7120::read(uint8_t buf[], uint32_t len)
 {
     // read response
-    if (Wire.requestFrom(_address, len) != len) {
+    if (Wire1.requestFrom(_address, len) != len) {
         return 0;
     }
 
     for (int i = 0; i < len; ++i) {
-        buf[i] = Wire.read();
+        buf[i] = Wire1.read();
     }
 
     // print response
